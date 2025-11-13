@@ -36,6 +36,10 @@ const menuSections = [
             en: "Starters",
             tr: "Başlangıçlar"
         },
+        shortLabel: {
+            en: "Start",
+            tr: "Başl."
+        },
         items: [
             {
                 name: {
@@ -77,6 +81,10 @@ const menuSections = [
         label: {
             en: "Signatures",
             tr: "Şefin İmzaları"
+        },
+        shortLabel: {
+            en: "Chef",
+            tr: "İmza"
         },
         items: [
             {
@@ -120,6 +128,10 @@ const menuSections = [
             en: "Wood-Fired Flatbreads",
             tr: "Odun Fırını Pideleri"
         },
+        shortLabel: {
+            en: "Flat",
+            tr: "Pide"
+        },
         items: [
             {
                 name: {
@@ -151,6 +163,10 @@ const menuSections = [
             en: "Desserts",
             tr: "Tatlılar"
         },
+        shortLabel: {
+            en: "Sweet",
+            tr: "Tatlı"
+        },
         items: [
             {
                 name: {
@@ -181,6 +197,10 @@ const menuSections = [
         label: {
             en: "House Drinks",
             tr: "Özel İçecekler"
+        },
+        shortLabel: {
+            en: "Drinks",
+            tr: "İçecek"
         },
         items: [
             {
@@ -217,6 +237,7 @@ const pillNav = document.getElementById("pill-nav");
 let pillButtons = [];
 let pillIndicator = null;
 let currentSectionId = menuSections[0]?.id || "";
+const indicatorEase = "power3.out";
 
 function moveIndicator(button) {
     if (!pillIndicator || !button) {
@@ -224,8 +245,18 @@ function moveIndicator(button) {
     }
     const offsetLeft = button.offsetLeft;
     const offsetWidth = button.offsetWidth;
-    pillIndicator.style.width = `${offsetWidth}px`;
-    pillIndicator.style.transform = `translate3d(${offsetLeft}px, 0, 0)`;
+
+    if (window.gsap) {
+        window.gsap.to(pillIndicator, {
+            x: offsetLeft,
+            width: offsetWidth,
+            duration: 0.35,
+            ease: indicatorEase
+        });
+    } else {
+        pillIndicator.style.width = `${offsetWidth}px`;
+        pillIndicator.style.transform = `translateX(${offsetLeft}px)`;
+    }
 }
 
 function setActiveSection(sectionId) {
@@ -236,6 +267,7 @@ function setActiveSection(sectionId) {
     pillButtons.forEach((button) => {
         const isActive = button.dataset.target === sectionId;
         button.classList.toggle("is-active", isActive);
+        button.setAttribute("aria-current", isActive ? "true" : "false");
         if (isActive) {
             window.requestAnimationFrame(() => moveIndicator(button));
         }
@@ -253,7 +285,21 @@ function renderPillNav(language) {
         button.type = "button";
         button.className = "pill-nav-item";
         button.dataset.target = section.id;
-        button.textContent = section.label[language] || section.label.en;
+
+        const fullLabel = section.label[language] || section.label.en;
+        const shortLabel = (section.shortLabel && (section.shortLabel[language] || section.shortLabel.en)) || fullLabel;
+
+        const fullSpan = document.createElement("span");
+        fullSpan.className = "pill-label-full";
+        fullSpan.textContent = fullLabel;
+
+        const shortSpan = document.createElement("span");
+        shortSpan.className = "pill-label-short";
+        shortSpan.textContent = shortLabel;
+
+        button.setAttribute("aria-label", fullLabel);
+        button.appendChild(fullSpan);
+        button.appendChild(shortSpan);
         button.addEventListener("click", () => {
             setActiveSection(section.id);
             const targetSection = document.getElementById(section.id);
@@ -274,6 +320,13 @@ function renderPillNav(language) {
         || "";
 
     if (fallbackSectionId) {
+        const activeButton = pillButtons.find((button) => button.dataset.target === fallbackSectionId);
+        if (window.gsap && activeButton && pillIndicator) {
+            window.gsap.set(pillIndicator, {
+                x: activeButton.offsetLeft,
+                width: activeButton.offsetWidth
+            });
+        }
         setActiveSection(fallbackSectionId);
     }
 }

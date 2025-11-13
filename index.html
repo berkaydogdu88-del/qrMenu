@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Sunset Bistro | QR Menu</title>
+    <link rel="stylesheet" href="styles.css">
+    <script defer src="main.js"></script>
+</head>
+<body>
+    <header class="hero">
+        <div class="hero-content">
+            <div class="brand-block">
+                <p class="brand-tag" data-i18n="brandTag">Chef-crafted seasonal plates</p>
+                <h1 class="brand-title" data-i18n="brandTitle">Sunset Bistro</h1>
+            </div>
+            <div class="language-switcher">
+                <label for="language" data-i18n="languageLabel">Language</label>
+                <select id="language" aria-label="Menu language">
+                    <option value="en">English</option>
+                    <option value="tr">Türkçe</option>
+                </select>
+            </div>
+        </div>
+    </header>
+
+    <main class="layout">
+        <section class="intro">
+            <p data-i18n="intro">Scan the QR code to return anytime. Ask our team about today's specials.</p>
+            <div class="allergen-callout" data-i18n="allergen">Please inform us about any allergies or dietary needs before ordering.</div>
+        </section>
+
+        <section id="menu" class="menu"></section>
+
+        <section class="footer-info">
+            <div class="contact">
+                <h2 data-i18n="contactHeading">Contact</h2>
+                <p><span data-i18n="phoneLabel">Phone</span>: <a href="tel:+905551112233">+90 555 111 22 33</a></p>
+                <p><span data-i18n="addressLabel">Address</span>: <span data-i18n="address">123 Seaside Avenue, Istanbul</span></p>
+                <p><span data-i18n="hoursLabel">Hours</span>: <span data-i18n="hours">Mon-Thu 10:00-22:30, Fri-Sun 10:00-23:30</span></p>
+            </div>
+            <div class="qr-tip" data-i18n="qrTip">Save this page to your home screen for faster access next time.</div>
+        </section>
+    </main>
+</body>
+</html>

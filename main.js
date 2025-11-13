@@ -212,6 +212,85 @@ const menuSections = [
 const languageSelect = document.getElementById("language");
 const menuContainer = document.getElementById("menu");
 const textBindings = Array.from(document.querySelectorAll("[data-i18n]"));
+const pillNav = document.getElementById("pill-nav");
+
+let pillButtons = [];
+let pillIndicator = null;
+let currentSectionId = menuSections[0]?.id || "";
+
+function moveIndicator(button) {
+    if (!pillIndicator || !button) {
+        return;
+    }
+    const offsetLeft = button.offsetLeft;
+    const offsetWidth = button.offsetWidth;
+    pillIndicator.style.width = `${offsetWidth}px`;
+    pillIndicator.style.transform = `translate3d(${offsetLeft}px, 0, 0)`;
+}
+
+function setActiveSection(sectionId) {
+    if (!sectionId || !pillButtons.length) {
+        return;
+    }
+    currentSectionId = sectionId;
+    pillButtons.forEach((button) => {
+        const isActive = button.dataset.target === sectionId;
+        button.classList.toggle("is-active", isActive);
+        if (isActive) {
+            window.requestAnimationFrame(() => moveIndicator(button));
+        }
+    });
+}
+
+function renderPillNav(language) {
+    if (!pillNav) {
+        return;
+    }
+
+    pillNav.innerHTML = "";
+    pillButtons = menuSections.map((section) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "pill-nav-item";
+        button.dataset.target = section.id;
+        button.textContent = section.label[language] || section.label.en;
+        button.addEventListener("click", () => {
+            setActiveSection(section.id);
+            const targetSection = document.getElementById(section.id);
+            if (targetSection) {
+                targetSection.scrollIntoView({ behavior: "smooth", block: "start" });
+            }
+        });
+        pillNav.appendChild(button);
+        return button;
+    });
+
+    pillIndicator = document.createElement("span");
+    pillIndicator.className = "pill-indicator";
+    pillNav.appendChild(pillIndicator);
+
+    const fallbackSectionId = menuSections.find((section) => section.id === currentSectionId)?.id
+        || menuSections[0]?.id
+        || "";
+
+    if (fallbackSectionId) {
+        setActiveSection(fallbackSectionId);
+    }
+}
+
+const sectionObserver = new IntersectionObserver(
+    (entries) => {
+        entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+                setActiveSection(entry.target.id);
+            }
+        });
+    },
+    {
+        rootMargin: "-45% 0px -45% 0px",
+        threshold: 0.1
+    }
+);
 
 function updateStaticCopy(language) {
     const copy = translations[language] || translations.en;
@@ -226,6 +305,7 @@ function updateStaticCopy(language) {
 
 function renderMenu(language) {
     menuContainer.innerHTML = "";
+    sectionObserver.disconnect();
     menuSections.forEach((section) => {
         const sectionEl = document.createElement("section");
         sectionEl.className = "menu-section";
@@ -263,6 +343,7 @@ function renderMenu(language) {
         });
 
         menuContainer.appendChild(sectionEl);
+        sectionObserver.observe(sectionEl);
     });
 }
 
@@ -270,11 +351,19 @@ function setLanguage(language) {
     const selectedLanguage = translations[language] ? language : "en";
     updateStaticCopy(selectedLanguage);
     renderMenu(selectedLanguage);
+    renderPillNav(selectedLanguage);
     languageSelect.value = selectedLanguage;
 }
 
 languageSelect.addEventListener("change", (event) => {
     setLanguage(event.target.value);
+});
+
+window.addEventListener("resize", () => {
+    const activeButton = pillButtons.find((button) => button.classList.contains("is-active"));
+    if (activeButton) {
+        moveIndicator(activeButton);
+    }
 });
 
 setLanguage("en");
